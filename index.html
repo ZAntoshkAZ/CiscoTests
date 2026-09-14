@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование Cisco / Сети</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --correct-bg: #d4edda;
+            --correct-border: #28a745;
+            --correct-text: #155724;
+            --incorrect-bg: #f8d7da;
+            --incorrect-border: #dc3545;
+            --incorrect-text: #721c24;
+            --primary-color: #0056b3;
+            --primary-hover: #004085;
+            --danger-color: #dc3545;
+            --danger-hover: #bd2130;
+            --info-color: #17a2b8;
+            --info-hover: #138496;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            color: #1a252f;
+            font-size: 1.6rem;
+            text-align: center;
+        }
+
+        .score-counter {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: #e9ecef;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-info {
+            background-color: var(--info-color);
+        }
+
+        .btn-info:hover {
+            background-color: var(--info-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .question-counter {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            white-space: pre-line;
+        }
+
+        .question-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #e2e6ea;
+            border-color: #dae0e5;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-border) !important;
+            color: var(--correct-text) !important;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--incorrect-bg) !important;
+            border-color: var(--incorrect-border) !important;
+            color: var(--incorrect-text) !important;
+        }
+
+        .text-input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .text-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .text-input.correct {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-border);
+            color: var(--correct-text);
+            font-weight: bold;
+        }
+
+        .text-input.incorrect {
+            background-color: var(--incorrect-bg);
+            border-color: var(--incorrect-border);
+            color: var(--incorrect-text);
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        .multi-hint {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .explanation-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--info-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #1c3d5a;
+        }
+
+        .explanation-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-panel">
+        <h1>Тестирование по сетям</h1>
+        <div class="score-counter" id="score-counter">Правильных ответов: 0 / 50</div>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="shuffleAndRender()">🔀 Перемешать вопросы</button>
+            <button class="btn btn-danger" onclick="resetAnswers()">🧹 Стереть все ответы</button>
+        </div>
+    </div>
+    <div id="quiz"></div>
+</div>
+
+<script>
+const originalQuizData = [
+    {
+        id: 1,
+        question: "Администратор вводит команду S(config-if)# ip address 192.168.0.1 255.255.255.0 в режиме настройки интерфейса коммутатора. Какова цель этого действия?",
+        options: [
+            "Настройка сети на интерфейсе коммутатора",
+            "Настройка сети на интерфейсе маршрутизатора",
+            "Настройка удаленного подключения к коммутатору",
+            "Действие ошибочно. На интерфейсе коммутатора нельзя настроить IP-адрес"
+        ],
+        correct: [2],
+        explanation: "Назначать IP-адрес виртуальному интерфейсу (SVI, например, interface vlan 1) коммутатора необходимо для того, чтобы к нему можно было подключаться удаленно по SSH или Telnet для управления."
+    },
+    {
+        id: 2,
+        question: "Администратор вводит команду service timestamps log datetime в консоли маршрутизатора. Какова цель этого действия?",
+        options: [
+            "Настройка маршрутизатора в качества сервера NTP",
+            "Настройка вывода логов на консоль",
+            "Настройка метки времени при выводе логов на консоль маршрутизатора",
+            "Настройка системных часов"
+        ],
+        correct: [2],
+        explanation: "Команда 'service timestamps log datetime' включает добавление точного времени и даты к каждому сообщению в логах устройства."
+    },
+    {
+        id: 3,
+        question: "Администратор сети вводит в терминале команду show running-config. Какова цель этого действия?",
+        options: [
+            "Просмотр содержимого флэш-памяти",
+            "Просмотр содержимого файла сохраненной конфигурации",
+            "Сохранение текущей конфигурации",
+            "Просмотр содержимого файла текущей конфигурации"
+        ],
+        correct: [3],
+        explanation: "'running-config' — это текущая активная конфигурация, находящаяся в оперативной памяти (RAM). Команда show отображает её содержимое."
+    },
+    {
+        id: 4,
+        question: "В каком командном режиме Cisco IOS можно очистить содержимое файла vlan.dat?",
+        options: [
+            "Пользовательский режим EXEC",
+            "Привилегированный режим EXEC",
+            "Режим конфигурации vlan",
+            "Режим глобальной конфигурации"
+        ],
+        correct: [1],
+        explanation: "Удаление файлов с флеш-памяти (например, 'delete flash:vlan.dat') выполняется в привилегированном режиме EXEC (приглашение '#')."
+    },
+    {
+        id: 5,
+        question: "Какие три выражения описывают преимущества статической маршрутизации? выберите три варианта",
+        type: "multiple",
+        options: [
+            "Требует углубленных знаний для настройки",
+            "Потребляет малое количество ресурсов маршрутизатора",
+            "Добавляет безопасность в процесс маршрутизации",
+            "Требует дополнительной настройки для обеспечения безопасности процесса маршрутизации",
+            "Обеспечивает предсказуемость добавленных маршрутов",
+            "Подходит для сетей большого размера"
+        ],
+        correct: [1, 2, 4],
+        explanation: "Статические маршруты не нагружают процессор расчетами, безопаснее (трафик не уйдет на поддельные маршрутизаторы) и всегда строго предсказуемы."
+    },
+    {
+        id: 6,
+        question: "Каких двух полей нет в заголовке IPv6? Выберите два варианта",
+        type: "multiple",
+        options: [
+            "Порядковый номер",
+            "Заголовок следующего уровня",
+            "Контрольная сумма заголовка",
+            "Длина полезной информации",
+            "Класс трафика"
+        ],
+        correct: [0, 2],
+        explanation: "В IPv6 убрали контрольную сумму (Header Checksum) для ускорения обработки и порядковые номера (Sequence Number — это уровень TCP)."
+    },
+    {
+        id: 7,
+        question: "Какого уровня нет в трехуровневой модели построения коммутируемых сетей?",
+        options: [
+            "Уровень доступа",
+            "Уровень ядра",
+            "Уровень объединения",
+            "Уровень распределения"
+        ],
+        correct: [2],
+        explanation: "Классическая модель Cisco состоит из трех уровней: Access (Доступ), Distribution (Распределение) и Core (Ядро). Уровня объединения нет."
+    },
+    {
+        id: 8,
+        question: "Какой протокол используется для тегирования кадров?",
+        options: [
+            "802.1d",
+            "802.1p",
+            "802.1q",
+            "802.3"
+        ],
+        correct: [2],
+        explanation: "IEEE 802.1Q — это общепринятый стандарт для маркировки (тегирования) VLAN-трафика в кадрах Ethernet."
+    },
+    {
+        id: 9,
+        question: "Какой протокол позволяет администратору получить защищенный доступ к управлению сетевым оборудованием?",
+        options: [
+            "HTTP",
+            "Telnet",
+            "PuTTy",
+            "SSH"
+        ],
+        correct: [3],
+        explanation: "SSH шифрует весь передаваемый трафик, в отличие от Telnet. (PuTTY — это клиентское приложение, а не протокол)."
+    },
+    {
+        id: 10,
+        question: "Какой способ пересылки на коммутаторе является наиболее быстрым и при этом добавляет надежность передачи?",
+        options: [
+            "Пересылка с буферизацией на основе портов",
+            "Сквозная пересылка с быстрой передачей",
+            "Сквозная пересылка с исключением фрагментов",
+            "Пересылка с буферизацией совместно используемой памяти"
+        ],
+        correct: [2],
+        explanation: "Fragment-free (исключение фрагментов) считывает первые 64 байта кадра, отсекая поврежденные кадры-коллизии перед отправкой, сохраняя высокую скорость."
+    },
+    {
+        id: 11,
+        question: "Какой тип маршрута автоматически добавляется в таблицу маршрутизации при включении интерфейса маршрутизатора?",
+        options: [
+            "Маршрут по умолчанию",
+            "Статический маршрут",
+            "Напрямую подключенный маршрут",
+            "Удаленный маршрут"
+        ],
+        correct: [2],
+        explanation: "Как только интерфейс переходит в состояние UP и на нем настроен IP, роутер автоматически создаст маршрут к непосредственно подключенной сети (C)."
+    },
+    {
+        id: 12,
+        question: "Какую команду необходимо ввести на интерфейсе маршрутизатора, чтобы настроить его в качестве DHCPv6-сервера без сохранения состояния?",
+        options: [
+            "ipv6 nd managed-config-flag",
+            "ipv6 nd other-config-flag",
+            "ipv6 nd prefix default no-autoconfig",
+            "ipv6 address autoconfig"
+        ],
+        correct: [1],
+        explanation: "Флаг 'other-config-flag' сообщает клиентам, что IP-адрес им нужно получить через SLAAC, а дополнительные настройки (DNS и т.д.) — у DHCPv6 сервера."
+    },
+    {
+        id: 13,
+        question: "На какие три характеристики коммутатора следует обратить внимание при построении коммутируемой сети? (Выберите три варианта)",
+        type: "multiple",
+        options: [
+            "Плотность портов",
+            "Поддержка беспроводной передачи данных",
+            "Дата производства",
+            "Стоимость",
+            "Простота настройки",
+            "Скорость портов"
+        ],
+        correct: [0, 3, 5],
+        explanation: "При выборе оборудования важны количество портов (плотность), их пропускная способность (скорость) и экономический бюджет (стоимость)."
+    },
+    {
+        id: 14,
+        question: "На что указывает зеленый индикатор скорости порта коммутатора?",
+        options: [
+            "Порт способен передавать данные со скоростью 1000 Мбит/с",
+            "Через порт передаются данные в настоящий момент",
+            "Порт способен передавать данные со скоростью 100 Мбит/с",
+            "Порт способен передавать данные со скоростью 10 Мбит/с"
+        ],
+        correct: [2],
+        explanation: "По стандартам Cisco выключенный/мигающий/зеленый светодиод — 10/100/1000 Мбит/с."
+    },
+    {
+        id: 15,
+        question: "ООО “Рога и копыта” переходит на современный способ коммуникации между сетями с использованием IPv6. Системному администратору было поручено перенастроить все сети для новой адресации. Администратор настраивает на интерфейсах адреса из сети 2001:0:0:2300::/64 и вводит команду no shutdown, но при просмотре таблицы маршрутизации обнаруживает, что она пустая. В чем может быть проблема?",
+        options: [
+            "Не были настроены link-local адреса IPv6 для связи между маршрутизаторами",
+            "Не был настроен какой-либо протокол маршрутизации",
+            "Не была введена команда глобального конфигурационного режима ipv6 unicast-routing",
+            "Выбрана неверная подсеть"
+        ],
+        correct: [2],
+        explanation: "На маршрутизаторах Cisco маршрутизация IPv6 по умолчанию отключена. Ее нужно активировать глобальной командой 'ipv6 unicast-routing'."
+    },
+    {
+        id: 16,
+        image: "assets/images/q16.png",
+        question: "Посмотрите на рисунок. PC1 отправляет эхо-запрос PC2, но получает ошибку истечения времени ответа на запрос. В чем может быть проблема?",
+        options: [
+            "На PC1 необходимо настроить адрес шлюза по умолчанию 192.168.20.254",
+            "На PC1 необходимо настроить адрес шлюза по умолчанию 192.168.10.254",
+            "На PC2 неверно указан IP-адрес",
+            "На маршрутизаторе не настроен ни один протокол маршрутизации"
+        ],
+        correct: [1],
+        explanation: "Для отправки пакетов за пределы своей подсети компьютеру PC1 необходимо знать IP-адрес своего шлюза по умолчанию в той же подсети (192.168.10.254)."
+    },
+    {
+        id: 17,
+        image: "assets/images/q17.png",
+        question: "Посмотрите на рисунок. Какие два вывода можно сделать на основе показанных выходных данных? (Выберите два варианта)",
+        type: "multiple",
+        options: [
+            "Системные часы на данном устройстве не синхронизированы",
+            "В качестве доверенного сточника времени выступает устройство с IP-адресом 212.194.86.94",
+            "Данное устройство является третьим в цепочке получения информации о времени",
+            "Данное устройство выполняет роль сервера NTP"
+        ],
+        correct: [1, 2],
+        explanation: "Символ '*' напротив IP указывает на активный/доверенный сервер NTP, а значение Stratum указывает уровень устройства в иерархии времени."
+    },
+    {
+        id: 18,
+        image: "assets/images/q18.png",
+        question: "Посмотрите на рисунок. Какие устройства получат кадр с MAC-адресом назначения 0A-00-00-00-FF-F0?",
+        options: [
+            "Все подключенные устройства кроме источника кадра",
+            "Кадр будет отброшен",
+            "Устройство, подключенное к порту 1",
+            "Устройство, подключенное к порту 2"
+        ],
+        correct: [0],
+        explanation: "Если MAC-адрес назначения отсутствует в таблице коммутации (или является широковещательным/многоадресным), коммутатор лавинообразно рассылает кадр на все порты, кроме входящего."
+    },
+    {
+        id: 19,
+        image: "assets/images/q19.png",
+        question: "Посмотрите на рисунок. Какой вывод можно сделать из данных, полученных в результате ввода команды show ip interface G0/0?",
+        options: [
+            "На интерфейсе настроена сеть по умолчанию",
+            "Администратор назначил на интерфейсе локальный IP-адрес 255.255.255.255",
+            "В режиме настройки интерфейса была введена команда ip address dhcp",
+            "Администратор назначил на интерфейс глобальный IP-адрес 212.194.68.12"
+        ],
+        correct: [2],
+        explanation: "Команда 'ip address dhcp' указывает интерфейсу запрашивать IP-адрес, маску и настройки у DHCP-сервера автоматически."
+    },
+    {
+        id: 20,
+        image: "assets/images/q20.png",
+        question: "Посмотрите на рисунок. Какой вывод можно сделать из полученных данных?",
+        options: [
+            "В сети есть DHCPv6-сервер с IPv6-адресом 2001:4860:4860::8888",
+            "Данный маршрутизатор настроен на выдачу IPv6-адресов методом SLAAC",
+            "Данный маршрутизатор настроен в качестве DHCPv6-сервера с сохранением состояния",
+            "На данный момент в сети нет клиентов DHCP"
+        ],
+        correct: [0],
+        explanation: "Вывод команды содержит строку Address allocation prefix, что указывает на выделение IPv6-адресов маршрутизатором, а строка Active clients: 2 подтверждает, что он отслеживает их состояние. Такое поведение свойственно исключительно DHCPv6-серверу в режиме Stateful (с сохранением состояния)."
+    },
+    {
+        id: 21,
+        image: "assets/images/q21.png",
+        question: "Посмотрите на рисунок. Какой вывод можно сделать на основе выходных данных?",
+        options: [
+            "На маршрутизаторе настроен протокол RIP",
+            "На маршрутизаторе настроен протокол BGP",
+            "Это непосредственно подключенная сеть",
+            "Данный маршрут добавлен в таблицу маршрутизации сетевым администратором вручную"
+        ],
+        correct: [0],
+        explanation: "в квадратных скобках маршрута указано административное расстояние (Administrative Distance) 120. 120 — это стандартное административное расстояние (AD) для протокола динамической маршрутизации RIP в оборудовании Cisco."
+    },
+    {
+        id: 22,
+        image: "assets/images/q22.png",
+        question: "Посмотрите на рисунок. Сетевой администратор настраивает интерфейс многоуровневого коммутатора S1 для связи с маршрутизатором R1. Для этой цели администратор вводит команду ip address 10.0.10.1 255.255.255.252, но получает ошибку (как показано на рисунке). В чем может быть проблема?",
+        options: [
+            "Необходимо изменить режим работы интерфейса коммутатора с помощью команды no shutdown",
+            "Администратор вводит неверное значение маски подсети",
+            "Перед настройкой адресации в режиме настройки интерфейса коммутатора необходимо ввести команду no switchport",
+            "На физический интерфейс коммутатора невозможно назначить IP-адрес"
+        ],
+        correct: [2],
+        explanation: "Порты L3-коммутатора по умолчанию работают в режиме L2. Чтобы сделать порт маршрутизируемым и назначить IP, нужно отключить коммутацию командой 'no switchport'."
+    },
+    {
+        id: 23,
+        image: "assets/images/q23.png",
+        question: "Посмотрите на рисунок. Сетевой администратор настраивает маршрутизацию между устройствами, находящимися в разных VLAN. Для проверки связи администратор отправляет ping c PC1 на PC2, но получает ответ о превышении времени ответа на запрос. В чем может быть проблема?",
+        options: [
+            "На маршрутизаторе не настроен ни один протокол маршрутизации",
+            "На подынтерфейсе G0/0.10 маршрутизатора необходимо настроить инкапсуляцию с помощью команды encapsulation dot1q 10",
+            "Для маршрутизации между VLANами необходимо использовать многоуровневый коммутатор",
+            "Необходимо прописать разрешенные VLAN на интерфейсе G0/0 маршрутизатора"
+        ],
+        correct: [1],
+        explanation: "При настройке Router-on-a-Stick на каждом подынтерфейсе роутера обязательна команда 'encapsulation dot1q <vlan_id>' для привязки к конкретному тегу."
+    },
+    {
+        id: 24,
+        image: "assets/images/q24.png",
+        question: "Посмотрите на рисунок. Сетевой администратор настроил протокол RIP для работы динамической маршрутизации, но при проверке не обнаружил рассылаемых маршрутов в таблице маршрутизации. В чем может быть проблема?",
+        options: [
+            "Необходимо отключить объединение маршрутов в настройке протокола маршрутизации RIP с посощью команды no auto-summary",
+            "Необходимо включить интерфейс ведущей к соседнему маршрутизатору из списка passive interface в настройках протокола маршрутизации RIP",
+            "Необходимо включить маршрутизацию с помощью команды режима глобальной конфигурации ip routing",
+            "Необходимо добавить сеть интерфейса ведущего к соседнему маршрутизатору, в список объявленных сетей с помощью команды network"
+        ],
+        correct: [3],
+        explanation: "Команда 'network' в протоколах маршрутизации (RIP, OSPF, EIGRP) определяет, какие интерфейсы участвуют в обмене маршрутами."
+    },
+    {
+        id: 25,
+        question: "При каком типе коммутации используется таблица смежности для выбора направления пересылки пакетов",
+        options: [
+            "Fast Switching",
+            "Process Switching",
+            "Adjacency Switching",
+            "Cisco Express Forwarding"
+        ],
+        correct: [3],
+        explanation: "Cisco Express Forwarding (CEF) строит Adjacency Table (таблицу смежности) на основе данных ARP для быстрой аппаратно-ускоренной коммутации."
+    },
+    {
+        id: 26,
+        question: "При каком типе связи протокол Ethernet использует метод доступа к среде CSMA/CD?",
+        options: [
+            "любая коммутируемая среда Ethernet",
+            "полудуплексная связь",
+            "полнодуплексная связь",
+            "связь точка-точка"
+        ],
+        correct: [1],
+        explanation: "CSMA/CD предназначен для обнаружения коллизий, которые возможны только в полудуплексных (half-duplex) средах передачи."
+    },
+    {
+        id: 27,
+        question: "При настройке сетевого оборудования администратор решает защитить установленные пароли от случайного подглядывания. Какую команду ему следует использовать?",
+        options: [
+            "R# erase startup-config",
+            "R(config)# service password-encryption",
+            "R(config)# password config",
+            "R(config)# enable security"
+        ],
+        correct: [1],
+        explanation: "Команда 'service password-encryption' шифрует все открытые пароли в конфигурационном файле простым алгоритмом Type 7."
+    },
+    {
+        id: 28,
+        question: "Сетевой администратор вводит команду ip dhcp exluded-address 192.168.64.254 в режиме глобальной конфигурации маршрутизатора. Какова цель данного действия?",
+        options: [
+            "Настройка статической привязки адреса 192.168.64.254 к DHCP-клиенту",
+            "настройка пула назначаемых клиентам IP-адресов",
+            "Настройка шлюза по умолчанию для DHCP-клиента",
+            "Исключение адреса 192.168.64.254 из пула назначаемых клиентам IP-адресов"
+        ],
+        correct: [3],
+        explanation: "Данная команда запрещает DHCP-серверу выдавать указанный IP-адрес клиентам (обычно резервируется под шлюз или принтер)."
+    },
+    {
+        id: 29,
+        question: "Сетевой администратор вводит команду ip helper-address 192.168.11.11 в режиме настройки интерфейса маршрутизатора. Какова цель данного действия?",
+        options: [
+            "Настройка шлюза по умолчанию для данного маршрутизатора",
+            "Настройка автоматического получения IP-адреса на интерфейсе c сервера с адресом 192.168.11.11",
+            "Настройка отправки логов на сервер с адресом 192.168.11.11",
+            "Настройка маршрутизатора в качестве агента ретрансляции"
+        ],
+        correct: [3],
+        explanation: "Команда 'ip helper-address' пересылает широковещательные DHCP-запросы (Relay Agent) на удаленный unicast-сервер."
+    },
+    {
+        id: 30,
+        question: "Сетевой администратор вводит команду ip route 192.168.10.0 255.255.255.0 GigabitEthernet 0/0 10.0.10.2 в режиме глобальной конфигурации. Каким типом маршрута является эта запись?",
+        options: [
+            "Суммарный статический маршрут",
+            "Напрямую подключенный статический маршрут",
+            "Плавающий статический маршрут",
+            "Полностью заданный статический маршрут"
+        ],
+        correct: [3],
+        explanation: "Полностью заданный (Fully Specified) маршрут содержит одновременно и выходной интерфейс, и IP-адрес следующего перехода (next-hop)."
+    },
+    {
+        id: 31,
+        question: "Сетевой администратор вводит команду ntp server 10.0.10.254 в режиме глобальной конфигурации маршрутизатора. Какова цель данного действия?",
+        options: [
+            "Настройка маршрутизатора в качестве сервера NTP",
+            "Настройка автоматического получение IP-адреса на маршрутизаторе",
+            "Настройка маршрутизатора в качестве клиента NTP",
+            "Настройка шлюза по умолчанию"
+        ],
+        correct: [2],
+        explanation: "Команда 'ntp server' заставляет маршрутизатор запрашивать точное время с указанного внешнего NTP-сервера."
+    },
+    {
+        id: 32,
+        question: "Что из перечисленного не является службой, предоставляемой протоколом системного журнала?",
+        options: [
+            "Определение типа собираемой информации",
+            "Сбор информации",
+            "Реагирование на сообщения критической важности",
+            "определение получателей сообщений"
+        ],
+        correct: [2],
+        explanation: "Syslog занимается исключительно сбором, фильтрацией и отправкой логов. Автоматическое реагирование на них выполняют другие системы (SIEM)."
+    },
+    {
+        id: 33,
+        question: "Что из перечисленного не является функцией маршрутизатора?",
+        options: [
+            "Подключение одной сети к другой",
+            "Пересылка трафика между сетями",
+            "Объединение устройств в одну сеть",
+            "Определение оптимального маршрута к месту назначение"
+        ],
+        correct: [2],
+        explanation: "Объединение конечных устройств в одну локальную сеть (L2) — это функция коммутаторов (Switch) и концентраторов (Hub)."
+    },
+    {
+        id: 34,
+        question: "Что из перечисленного является link-local адресом IPv6?",
+        options: [
+            "FE00::1",
+            "FE81::23a1:b152",
+            "FC::123:ab2",
+            "2001::2300:b52"
+        ],
+        correct: [1],
+        explanation: "Локальные связные адреса (Link-Local) IPv6 всегда находятся в диапазоне от fe80::/10 (т.е. начинаются с fe8, fe9, fea, feb)."
+    },
+    {
+        id: 35,
+        question: "Что из перечисленного является подсетью сети 2001:FEED:EDA::?",
+        options: [
+            "2001:FEED:EDA8::/49",
+            "2001:FEED:EDA:2000::/64",
+            "2001:FEED:EDA:8::/48",
+            "2001:FEED:EDA1::/64"
+        ],
+        correct: [1],
+        explanation: "Подсеть 2001:FEED:EDA:2000::/64 входит в префикс 2001:FEED:EDA::/48 за счет совпадения первых 48 бит."
+    },
+    {
+        id: 36,
+        question: "Что из перечисленного является функцией уровня ядра трехуровневой модели построения сетей?",
+        options: [
+            "Предоставление доступа пользователю к сети",
+            "Агрегация трафика",
+            "Управление доступом к сети с помощью политик",
+            "Связь между разными сегментами сети или внешними сетями"
+        ],
+        correct: [3],
+        explanation: "Главная задача уровня ядра (Core) — максимально быстрая транспортировка больших объемов трафика между сегментами и внешними сетями."
+    },
+    {
+        id: 37,
+        question: "Что из перечисленного является характеристикой VLAN?",
+        options: [
+            "Ограничивает распространение широковещательного трафика",
+            "Порт коммутатора можно поместить в несколько VLAN",
+            "Используется для голосового трафика",
+            "Позволяет маршрутизатору разделить сеть на подсети"
+        ],
+        correct: [0],
+        explanation: "VLAN разделяет один физический коммутатор на несколько логических широковещательных доменов, изоляция предотвращает штормы."
+    },
+    {
+        id: 38,
+        question: "Что из перечисленного является характеристикой сети без границ (Borderless Network)?",
+        options: [
+            "Предназначена для передачи голосового трафика",
+            "Позволяет пользователям получать доступ к сетевым ресурсам в любое время из любого места",
+            "Является объединением локальных сетей",
+            "Является беспроводной сетью"
+        ],
+        correct: [1],
+        explanation: "Концепция Cisco Borderless Network обеспечивает безопасный и надежный доступ пользователей к ресурсам из любой точки и с любого устройства."
+    },
+    {
+        id: 39,
+        question: "Как называется процесс определение интерфейса для пересылки пакета, полученного на одном ?интерфейсе до пункта? назначения? Ответ напишите на русском или английском языках.",
+        type: "text",
+        correctText: ["Маршрутизация", "маршрутизация", "Routing", "routing"],
+        explanation: "Маршрутизация — процесс выбора пути и пересылки IP-пакетов между различными сетями на основе таблицы маршрутизации."
+    },
+    {
+        id: 40,
+        question: "Как называется уровень трехуровневой модели построения коммутируемых сетей, на котором происходит маршрутизация между пользователями сети? Напишите название в два слово на русском или английском языках",
+        type: "text",
+        correctText: ["Уровень распределения", "уровень распределения", "distribution layer"],
+        explanation: "Именно на уровне распределения (Distribution) объединяются VLAN, применяются политики безопасности (ACL) и осуществляется межсетевая маршрутизация."
+    },
+    {
+        id: 41,
+        question: "Напишите OUI MAC-адреса CD-01-88-AB-CD-EF.",
+        type: "text",
+        correctText: ["CС-01-88", "CD-01-88", "cc-01-88", "cd-01-88"],
+        explanation: "OUI (Organizationally Unique Identifier) — это первые 3 байта (6 шестнадцатеричных символов) MAC-адреса, идентифицирующие производителя."
+    },
+    {
+        id: 42,
+        question: "Введите команду, с помощью которой можно поместить интерфейс коммутатора в VLAN 3.",
+        type: "text",
+        correctText: ["switchport access vlan 3"],
+        explanation: "Команда 'switchport access vlan 3' привязывает конкретный порт доступа к 3-му VLAN."
+    },
+    {
+        id: 43,
+        question: "Напишите название(аббревиатурой или полностью) вендорнонезависимого протокола, позволяют…. …. подключенные сетевые устройства",
+        type: "text",
+        correctText: ["lldp", "LLDP"],
+        explanation: "LLDP (Link Layer Discovery Protocol) — открытый стандарт канального уровня для обнаружения соседних сетевых устройств."
+    },
+    {
+        id: 44,
+        question: "Напишите название переменной, в которой хранится путь до файла загрузки IOS?",
+        type: "text",
+        correctText: ["BOOT", "boot"],
+        explanation: "Переменная окружения BOOT указывает ROMMON и маршрутизатору, из какого файла во флеш-памяти загружать операционную систему Cisco IOS."
+    },
+    {
+        id: 45,
+        question: "Напишите префикс IPv6-адреса FE00:0000:00ab:0000:0000:0123:0000:0000/64 в сокращенном виде",
+        type: "text",
+        correctText: ["FE00:0:ab::", "fe00:0:ab::"],
+        explanation: "При сокращении IPv6 опускаются ведущие нули в блоках (00ab -> ab), а последовательности нулевых блоков заменяются на '::' (первые 64 бита)."
+    },
+    {
+        id: 46,
+        question: "С помощью какой команды можно вернуться в привилегированный режим EXEC из любого … режима Cisco IOS?",
+        type: "text",
+        correctText: ["end"],
+        explanation: "Команда 'end' (или сочетание Ctrl+Z) мгновенно возвращает пользователя в привилегированный режим EXEC (#) из любого подрежима конфигурации."
+    },
+    {
+        id: 47,
+        question: "Напишите с помощью какой команды можно установить защищенный доступ к привилегированному режиму …",
+        type: "text",
+        correctText: ["enable secret"],
+        explanation: "Команда 'enable secret' задает пароль на вход в привилегированный режим и автоматически хэширует его стойким алгоритмом MD5/SHA-256."
+    },
+    {
+        id: 48,
+        image: "assets/images/q48.png",
+        question: "Какие сегменты образуют домен коллизий?",
+        type: "text",
+        correctText: ["i,ii,iii,iv,v", "i, ii, iii, iv, v"],
+        explanation: "Каждый отдельный порт коммутатора создает собственный домен коллизий."
+    },
+    {
+        id: 49,
+        image: "assets/images/q49.png",
+        question: "Какие сегменты образуют широковещательный домен?",
+        type: "text",
+        correctText: ["i,ii,iii,iv,v,vi", "i, ii, iii, iv, v, vi"],
+        explanation: "Все порты, находящиеся в одном VLAN/сети, образуют единый широковещательный домен."
+    },
+    {
+        id: 50,
+        question: "С помощью какой команды можно отключить рассылку сообщение протокола RIP не исключая настроенную на нем сеть объявлений маршрутов?",
+        type: "text",
+        correctText: ["passive-interface"],
+        explanation: "Команда 'passive-interface' запрещает отправку периодических обновлений маршрутизации из порта, но позволяет принимать их и объявлять сеть этого интерфейса."
+    }
+];
+
+let currentQuizData = [];
+const userAnswers = {};
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function updateScore() {
+    let correctCount = 0;
+    currentQuizData.forEach(q => {
+        const userAns = userAnswers[q.id];
+        if (!userAns) return;
+
+        if (q.type === 'text') {
+            if (q.correctText.some(ans => ans.toLowerCase() === userAns.trim().toLowerCase())) {
+                correctCount++;
+            }
+        } else if (q.type === 'multiple') {
+            const isCorrect = q.correct.length === userAns.length && 
+                              q.correct.every(val => userAns.includes(val));
+            if (isCorrect) correctCount++;
+        } else {
+            if (userAns.length === 1 && q.correct.includes(userAns[0])) {
+                correctCount++;
+            }
+        }
+    });
+
+    document.getElementById('score-counter').textContent = `Правильных ответов: ${correctCount} / ${currentQuizData.length}`;
+}
+
+function resetAnswers() {
+    for (let key in userAnswers) {
+        delete userAnswers[key];
+    }
+    renderQuiz();
+    updateScore();
+}
+
+function shuffleAndRender() {
+    for (let key in userAnswers) {
+        delete userAnswers[key];
+    }
+    currentQuizData = shuffleArray(originalQuizData).map(q => {
+        if (q.options) {
+            const indexedOptions = q.options.map((optText, origIdx) => ({
+                text: optText,
+                origIdx: origIdx
+            }));
+            return {
+                ...q,
+                shuffledOptions: shuffleArray(indexedOptions)
+            };
+        }
+        return { ...q };
+    });
+    renderQuiz();
+    updateScore();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showAnswer(qId, index) {
+    const q = currentQuizData.find(item => item.id === qId);
+    const card = document.getElementById(`q-${index}`);
+    const expBox = card.querySelector('.explanation-box');
+
+    if (q.type === 'text') {
+        const input = card.querySelector('.text-input');
+        input.value = q.correctText[0];
+        input.classList.add('correct');
+        input.classList.remove('incorrect');
+        userAnswers[q.id] = q.correctText[0];
+    } else if (q.type === 'multiple') {
+        const checkboxes = card.querySelectorAll('.checkbox-item');
+        checkboxes.forEach((label) => {
+            const chk = label.querySelector('input');
+            const origIdx = parseInt(chk.value, 10);
+            const isCorrect = q.correct.includes(origIdx);
+            chk.checked = isCorrect;
+            label.style.borderWidth = '2px';
+            if (isCorrect) {
+                label.style.backgroundColor = 'var(--correct-bg)';
+                label.style.borderColor = 'var(--correct-border)';
+                label.style.color = 'var(--correct-text)';
+            } else {
+                label.style.backgroundColor = '';
+                label.style.borderColor = '';
+                label.style.color = '';
+            }
+        });
+        userAnswers[q.id] = [...q.correct];
+    } else {
+        const buttons = card.querySelectorAll('.option-btn');
+        buttons.forEach((btn) => {
+            const origIdx = parseInt(btn.dataset.origIdx, 10);
+            btn.classList.remove('correct', 'incorrect');
+            if (q.correct.includes(origIdx)) {
+                btn.classList.add('correct');
+            }
+        });
+        userAnswers[q.id] = [...q.correct];
+    }
+
+    expBox.style.display = 'block';
+    updateScore();
+}
+
+function renderQuiz() {
+    const container = document.getElementById('quiz');
+    container.innerHTML = '';
+    
+    currentQuizData.forEach((q, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `q-${index}`;
+
+        const counter = document.createElement('div');
+        counter.className = 'question-counter';
+        counter.textContent = `Вопрос ${index + 1} из ${currentQuizData.length}`;
+        card.appendChild(counter);
+
+        const title = document.createElement('div');
+        title.className = 'question-title';
+        title.textContent = q.question;
+        card.appendChild(title);
+
+        if (q.image) {
+            const img = document.createElement('img');
+            img.className = 'question-image';
+            img.src = q.image;
+            img.alt = `Иллюстрация к вопросу ${index + 1}`;
+            card.appendChild(img);
+        }
+
+        if (q.type === 'text') {
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'text-input-container';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'text-input';
+            input.placeholder = 'Введите ваш ответ...';
+            if (userAnswers[q.id] !== undefined) {
+                input.value = userAnswers[q.id];
+                const userVal = input.value.trim().toLowerCase();
+                if (q.correctText.some(ans => ans.toLowerCase() === userVal)) {
+                    input.classList.add('correct');
+                } else {
+                    input.classList.add('incorrect');
+                }
+            }
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'submit-btn';
+            submitBtn.textContent = 'Проверить';
+
+            submitBtn.onclick = () => {
+                const userVal = input.value.trim();
+                userAnswers[q.id] = userVal;
+
+                if (q.correctText.some(ans => ans.toLowerCase() === userVal.toLowerCase())) {
+                    input.classList.add('correct');
+                    input.classList.remove('incorrect');
+                } else {
+                    input.classList.add('incorrect');
+                    input.classList.remove('correct');
+                }
+                updateScore();
+            };
+
+            inputContainer.appendChild(input);
+            inputContainer.appendChild(submitBtn);
+            card.appendChild(inputContainer);
+
+        } else if (q.type === 'multiple') {
+            const hint = document.createElement('div');
+            hint.className = 'multi-hint';
+            hint.textContent = 'Выберите несколько вариантов и нажмите "Проверить":';
+            card.appendChild(hint);
+
+            const optionsList = document.createElement('div');
+            optionsList.className = 'options-list';
+
+            const checkboxes = [];
+
+            q.shuffledOptions.forEach((optObj, displayIdx) => {
+                const label = document.createElement('label');
+                label.className = 'checkbox-item';
+
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.value = optObj.origIdx;
+
+                if (userAnswers[q.id] && userAnswers[q.id].includes(optObj.origIdx)) {
+                    chk.checked = true;
+                }
+
+                label.appendChild(chk);
+                label.appendChild(document.createTextNode(`${displayIdx + 1}. ${optObj.text}`));
+                optionsList.appendChild(label);
+                checkboxes.push({ chk, label, origIdx: optObj.origIdx });
+            });
+
+            card.appendChild(optionsList);
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'submit-btn';
+            submitBtn.style.marginTop = '15px';
+            submitBtn.textContent = 'Проверить';
+
+            submitBtn.onclick = () => {
+                const selected = checkboxes
+                    .filter(({ chk }) => chk.checked)
+                    .map(({ origIdx }) => origIdx);
+
+                userAnswers[q.id] = selected;
+
+                checkboxes.forEach(({ chk, label, origIdx }) => {
+                    const isChecked = chk.checked;
+                    const isShouldBeChecked = q.correct.includes(origIdx);
+
+                    label.style.borderWidth = '2px';
+                    if (isShouldBeChecked) {
+                        label.style.backgroundColor = 'var(--correct-bg)';
+                        label.style.borderColor = 'var(--correct-border)';
+                        label.style.color = 'var(--correct-text)';
+                    } else if (isChecked && !isShouldBeChecked) {
+                        label.style.backgroundColor = 'var(--incorrect-bg)';
+                        label.style.borderColor = 'var(--incorrect-border)';
+                        label.style.color = 'var(--incorrect-text)';
+                    } else {
+                        label.style.backgroundColor = '';
+                        label.style.borderColor = '';
+                        label.style.color = '';
+                    }
+                });
+                updateScore();
+            };
+
+            if (userAnswers[q.id] !== undefined) {
+                submitBtn.click();
+            }
+
+            card.appendChild(submitBtn);
+
+        } else {
+            const optionsList = document.createElement('div');
+            optionsList.className = 'options-list';
+
+            q.shuffledOptions.forEach((optObj, displayIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${displayIdx + 1}. ${optObj.text}`;
+                btn.dataset.origIdx = optObj.origIdx;
+
+                if (userAnswers[q.id] && userAnswers[q.id].includes(optObj.origIdx)) {
+                    if (q.correct.includes(optObj.origIdx)) {
+                        btn.classList.add('correct');
+                    } else {
+                        btn.classList.add('incorrect');
+                    }
+                }
+
+                btn.onclick = () => {
+                    userAnswers[q.id] = [optObj.origIdx];
+                    const buttons = optionsList.querySelectorAll('.option-btn');
+                    buttons.forEach((b) => {
+                        const bOrigIdx = parseInt(b.dataset.origIdx, 10);
+                        b.classList.remove('correct', 'incorrect');
+                        if (bOrigIdx === optObj.origIdx) {
+                            if (q.correct.includes(optObj.origIdx)) {
+                                b.classList.add('correct');
+                            } else {
+                                b.classList.add('incorrect');
+                            }
+                        }
+                    });
+                    updateScore();
+                };
+
+                optionsList.appendChild(btn);
+            });
+
+            card.appendChild(optionsList);
+        }
+
+        const actionBar = document.createElement('div');
+        actionBar.className = 'action-bar';
+
+        const showAnsBtn = document.createElement('button');
+        showAnsBtn.className = 'btn btn-info';
+        showAnsBtn.textContent = '💡 Посмотреть ответ';
+        showAnsBtn.onclick = () => showAnswer(q.id, index);
+
+        actionBar.appendChild(showAnsBtn);
+        card.appendChild(actionBar);
+
+        const expBox = document.createElement('div');
+        expBox.className = 'explanation-box';
+        expBox.innerHTML = `<strong>Объяснение:</strong> ${q.explanation || 'Объяснение отсутствует.'}`;
+        card.appendChild(expBox);
+
+        container.appendChild(card);
+    });
+}
+
+window.onload = shuffleAndRender;
+</script>
+</body>
+</html>
